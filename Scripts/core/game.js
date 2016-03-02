@@ -39,6 +39,13 @@ var game = (function () {
     var sphere;
     var sphereGeometry;
     var sphereMaterial;
+    var towerGeometry;
+    var towerMaterial;
+    var tower;
+    var groundGeometry;
+    var groundMaterial;
+    var ground;
+    var pointLight;
     var ambientLight;
     var spotLight;
     var control;
@@ -65,42 +72,34 @@ var game = (function () {
         sphereMaterial = new LambertMaterial({ color: 0xff0000 });
         sphere = new gameObject(sphereGeometry, sphereMaterial, 0, 2.5, 0);
         sphere.name = "The Red Planet";
-        scene.add(sphere);
+        // scene.add(sphere);
         console.log("Added Sphere Primitive to the scene");
-        // setup first person controls
-        firstPersonControls = new FirstPersonControls(sphere);
-        firstPersonControls.lookSpeed = 0.4;
-        firstPersonControls.movementSpeed = 10;
-        firstPersonControls.lookVertical = true;
-        firstPersonControls.constrainVertical = true;
-        firstPersonControls.verticalMin = 0;
-        firstPersonControls.verticalMax = 2.0;
-        firstPersonControls.lon = -150;
-        firstPersonControls.lat = 120;
-        // add an axis helper to the scene
-        axes = new AxisHelper(20);
-        sphere.add(axes);
-        console.log("Added Axis Helper to scene...");
-        // Add an AmbientLight to the scene
-        //ambientLight = new AmbientLight(0x090909);
-        //scene.add(ambientLight);
-        //console.log("Added an Ambient Light to Scene");
-        // Add a SpotLight to the scene
-        spotLight = new SpotLight(0xffffff);
-        spotLight.position.set(5.6, 23.1, 5.4);
-        spotLight.rotation.set(-0.8, 42.7, 19.5);
-        spotLight.intensity = 2;
-        spotLight.angle = 60 * (Math.PI / 180);
-        spotLight.distance = 200;
-        spotLight.castShadow = true;
-        spotLight.shadowCameraNear = 1;
-        spotLight.shadowMapHeight = 2048;
-        spotLight.shadowMapWidth = 2048;
-        scene.add(spotLight);
-        console.log("Added a SpotLight Light to Scene");
-        // add controls
+        // Point Light
+        pointLight = new PointLight(0xffffff);
+        pointLight.position.set(-4, 6, -4);
+        scene.add(pointLight);
+        console.log("Added pointLight to scene");
+        // Tower Object
+        towerGeometry = new CubeGeometry(2, 10, 2);
+        towerMaterial = new LambertMaterial({ color: 0xc9c9c9 });
+        tower = new Mesh(towerGeometry, towerMaterial);
+        tower.position.setY(5);
+        scene.add(tower);
+        console.log("Added Tower Object to scene");
+        // Burnt Ground
+        groundGeometry = new PlaneGeometry(16, 16);
+        groundMaterial = new LambertMaterial({ color: 0xe75d14 });
+        ground = new Mesh(groundGeometry, groundMaterial);
+        ground.rotation.x = -0.5 * Math.PI;
+        scene.add(ground);
+        console.log("Added Burnt Ground to scene");
+        // Add Helper Axis
+        axes = new AxisHelper(30);
+        ground.add(axes);
+        console.log("Added Axis Helper Object to the ground");
+        //add controls
         gui = new GUI();
-        control = new Control(0.05);
+        control = new Control(0.05, false);
         addControl(control);
         // Add framerate stats
         addStatsObject();
@@ -110,6 +109,7 @@ var game = (function () {
     }
     function addControl(controlObject) {
         gui.add(controlObject, 'rotationSpeed', -0.5, 0.5);
+        gui.add(controlObject, "switchButton");
     }
     function addStatsObject() {
         stats = new Stats();
@@ -122,13 +122,14 @@ var game = (function () {
     // Setup main game loop
     function gameLoop() {
         stats.update();
-        var delta = clock.getDelta();
-        sphere.rotation.y += control.rotationSpeed;
-        firstPersonControls.update(delta);
+        //sphere.rotation.y += control.rotationSpeed;
         // render using requestAnimationFrame
         requestAnimationFrame(gameLoop);
         // render the scene
         renderer.render(scene, camera);
+        if (control.goDown) {
+            tower.position.y -= 0.1;
+        }
     }
     // Setup default renderer
     function setupRenderer() {
@@ -154,5 +155,4 @@ var game = (function () {
         scene: scene
     };
 })();
-
 //# sourceMappingURL=game.js.map
